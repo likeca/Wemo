@@ -48,6 +48,11 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+String switchState = '0';
+String operation = 'Get'; //  $operation$option, GetBinaryState, SetBinaryState, GetSignalStrength
+String option = 'BinaryState'; // $operation: Get or Set, $option: BinaryState, BinaryState, SignalStrength
+String url = '192.168.1.102:49153';
+
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
@@ -57,35 +62,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  // int switchState = 0;
-  // String operation = 'Get'; // Get or Set,
-  // String option = 'GetBinaryState'; // GetBinaryState, SetBinaryState, GetSignalStrength,
-  // String url = '192.168.1.102';
-  // var headers = {
-  //   'Accept': '*/*',
-  //   'content-type': 'text/xml; charset="utf-8"',
-  //   'SOAPACTION': 'urn:Belkin:service:basicevent:1#GetBinaryState'
-  // };
-  // var data = '''
-  //     <?xml version="1.0" encoding="utf-8"?>
-  //     <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-  //         <s:Body>
-  //             <u:{operation}{option} xmlns:u="urn:Belkin:service:basicevent:1">
-  //                 <BinaryState>$switch</BinaryState>
-  //             </u:GetBinaryState>
-  //         </s:Body>
-  //     </s:Envelope>
-  // ''';
-
-  String url = '192.168.1.102:49153';
-  var headers = {'Accept': '*/*', 'content-type': 'text/xml; charset="utf-8"', 'SOAPACTION': '"urn:Belkin:service:basicevent:1#GetBinaryState"'};
-  var data = '''
+  var headers = {'Accept': '*/*', 'content-type': 'text/xml; charset="utf-8"', 'SOAPACTION': '"urn:Belkin:service:basicevent:1#$operation$option"'};
+  String data = '''
       <?xml version="1.0" encoding="utf-8"?>
       <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
           <s:Body>
-              <u:GetBinaryState xmlns:u="urn:Belkin:service:basicevent:1">
-                  <BinaryState>0</BinaryState>
-              </u:GetBinaryState>
+              <u:$operation$option xmlns:u="urn:Belkin:service:basicevent:1">
+                  <$option></$option>
+              </u:$operation$option>
           </s:Body>
       </s:Envelope>
   ''';
@@ -93,8 +77,6 @@ class _MyHomePageState extends State<MyHomePage> {
   postData() async {
     try {
       var response = await http.post(Uri.http(url, '/upnp/control/basicevent1'), headers: headers, body: data).timeout(const Duration(seconds: 10));
-      // var response = await http.post(Uri.parse(url), headers: headers, body: json.encode(data)).timeout(const Duration(seconds: 10));
-      // var response = await http.get(Uri.parse(url));
       print(response.body);
     } catch (e) {
       print(e);
