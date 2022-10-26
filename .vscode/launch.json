@@ -7,19 +7,9 @@
         {
             "name": "Wemo",
             "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "Wemo (profile mode)",
-            "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "Wemo (release mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
+            "flutterMode": "debug",
+            "args": ["-d", "chrome"]
         }
     ]
 }
