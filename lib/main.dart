@@ -34,36 +34,88 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   var devices = [];
 
-  String switchState = '0';
-  String operation = 'Get'; //  $operation$option, GetBinaryState, SetBinaryState, GetSignalStrength
-  String option = 'BinaryState'; // $operation: Get or Set, $option: BinaryState, BinaryState, SignalStrength
-
-  initWemo() {
-    for (var i = 2; i < 10; i++) {
-      devices.add({'ip': '192.168.1.10$i'});
-    }
-  }
-
-  operationWemo(ip) async {
+  operationWemo(ip, cmd) async {
+    print(ip);
     String url = '$ip:49153';
+    int switchState = 0;
+    String operation = '';
+    String option = '';
+
+    if (cmd == 'on') {
+      switchState = 1; // 1: ON, 0: OFF
+      operation = 'Set'; // Get or Set, GetBinaryState, SetBinaryState, GetSignalStrength,
+      option = 'BinaryState';
+    }
+    if (cmd == 'off') {
+      switchState = 0; // 1: ON, 0: OFF
+      operation = 'Set'; // Get or Set, GetBinaryState, SetBinaryState, GetSignalStrength,
+      option = 'BinaryState';
+    }
+    if (cmd == 'get_state') {
+      switchState = 0; // 1: ON, 0: OFF
+      operation = 'Get'; // Get or Set, GetBinaryState, SetBinaryState, GetSignalStrength,
+      option = 'BinaryState';
+    }
+    if (cmd == 'get_name') {
+      switchState = 0; // 1: ON, 0: OFF
+      operation = 'Get'; // Get or Set, GetBinaryState, SetBinaryState, GetSignalStrength,
+      option = 'FriendlyName';
+    }
+
     var headers = {'Accept': '*/*', 'content-type': 'text/xml; charset="utf-8"', 'SOAPACTION': '"urn:Belkin:service:basicevent:1#$operation$option"'};
     String data = '''
       <?xml version="1.0" encoding="utf-8"?>
       <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
           <s:Body>
               <u:$operation$option xmlns:u="urn:Belkin:service:basicevent:1">
-                  <$option></$option>
+                  <$option>$switchState</$option>
               </u:$operation$option>
           </s:Body>
       </s:Envelope>
     ''';
 
     try {
-      var response = await http.post(Uri.http(url, '/upnp/control/basicevent1'), headers: headers, body: data).timeout(const Duration(seconds: 10));
-      print(response.statusCode);
-      print(response.body);
+      var response = await http.post(Uri.http(url, '/upnp/control/basicevent1'), headers: headers, body: data).timeout(const Duration(seconds: 1));
+
+      if (cmd == 'get_name') {
+        RegExp regexp = RegExp(r'<FriendlyName>(.*)</FriendlyName>');
+        final match = regexp.firstMatch(response.body);
+        print(match?.group(1));
+        if (match?.group(1) != '') {
+          return match?.group(1);
+        }
+      } else {
+        RegExp regexp = RegExp(r'<BinaryState>(.*)</BinaryState>');
+        final match = regexp.firstMatch(response.body);
+        print(match?.group(1));
+        if (match?.group(1) != '') {
+          return match?.group(1);
+        }
+      }
     } catch (e) {
-      print(e);
+      return 'Offline Line';
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    for (var i = 2; i < 10; i++) {
+      var device = {};
+      device['ip'] = '192.168.1.10$i';
+      device['name'] = operationWemo(device['ip'], 'get_name');
+      devices.add(device);
+    }
+    // getAllDevices();
+    print(devices);
+  }
+
+  getAllDevices() {
+    for (int i = 2; i < 10; i++) {
+      print(i);
+      // operationWemo(devices[i], 'get_name');
+      // final name = operationWemo(devices[i], 'get_name');
+      // devices[i]['name'] = name;
     }
   }
 
@@ -92,7 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         // onPressed: _incrementCounter,
-        onPressed: () => wemo('192.168.1.102'),
+        onPressed: () => operationWemo('192.168.1.102', 'get_state'),
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
