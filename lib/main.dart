@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:wemo/wemo/operate_wemo.dart';
+
+var devices = [];
 
 void main() {
   runApp(const WeMo());
@@ -8,7 +10,6 @@ void main() {
 class WeMo extends StatelessWidget {
   const WeMo({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -16,7 +17,7 @@ class WeMo extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'WeMo Desc'),
     );
   }
 }
@@ -32,92 +33,41 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  var devices = [];
 
-  operationWemo(ip, cmd) async {
-    print(ip);
-    String url = '$ip:49153';
-    int switchState = 0;
-    String operation = '';
-    String option = '';
+  // Future<List<Map>> _devices = OperateWeMo().fetchWeMos();
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   OperateWeMo().fetchWeMos();
+  //   // devices = OperateWeMo().fetchWeMos();
+  //   // print(devices);
+  // }
 
-    if (cmd == 'on') {
-      switchState = 1; // 1: ON, 0: OFF
-      operation = 'Set'; // Get or Set, GetBinaryState, SetBinaryState, GetSignalStrength,
-      option = 'BinaryState';
-    }
-    if (cmd == 'off') {
-      switchState = 0; // 1: ON, 0: OFF
-      operation = 'Set'; // Get or Set, GetBinaryState, SetBinaryState, GetSignalStrength,
-      option = 'BinaryState';
-    }
-    if (cmd == 'get_state') {
-      switchState = 0; // 1: ON, 0: OFF
-      operation = 'Get'; // Get or Set, GetBinaryState, SetBinaryState, GetSignalStrength,
-      option = 'BinaryState';
-    }
-    if (cmd == 'get_name') {
-      switchState = 0; // 1: ON, 0: OFF
-      operation = 'Get'; // Get or Set, GetBinaryState, SetBinaryState, GetSignalStrength,
-      option = 'FriendlyName';
-    }
+  // getAllDevices() {
+  //   for (int i = 2; i < 10; i++) {
+  //     print(i);
+  //     // operationWemo(devices[i], 'get_name').then((name) {
+  //     //   devices[i]['name'] = name;
+  //     // });
 
-    var headers = {'Accept': '*/*', 'content-type': 'text/xml; charset="utf-8"', 'SOAPACTION': '"urn:Belkin:service:basicevent:1#$operation$option"'};
-    String data = '''
-      <?xml version="1.0" encoding="utf-8"?>
-      <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-          <s:Body>
-              <u:$operation$option xmlns:u="urn:Belkin:service:basicevent:1">
-                  <$option>$switchState</$option>
-              </u:$operation$option>
-          </s:Body>
-      </s:Envelope>
-    ''';
+  //     // final name = await operationWemo(devices[i], 'get_name');
+  //     // devices[i]['name'] = name;
+  //   }
+  // }
 
-    try {
-      var response = await http.post(Uri.http(url, '/upnp/control/basicevent1'), headers: headers, body: data).timeout(const Duration(seconds: 1));
-
-      if (cmd == 'get_name') {
-        RegExp regexp = RegExp(r'<FriendlyName>(.*)</FriendlyName>');
-        final match = regexp.firstMatch(response.body);
-        print(match?.group(1));
-        if (match?.group(1) != '') {
-          return match?.group(1);
-        }
-      } else {
-        RegExp regexp = RegExp(r'<BinaryState>(.*)</BinaryState>');
-        final match = regexp.firstMatch(response.body);
-        print(match?.group(1));
-        if (match?.group(1) != '') {
-          return match?.group(1);
-        }
-      }
-    } catch (e) {
-      return 'Offline Line';
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    for (var i = 2; i < 10; i++) {
-      var device = {};
-      device['ip'] = '192.168.1.10$i';
-      device['name'] = operationWemo(device['ip'], 'get_name');
-      devices.add(device);
-    }
-    // getAllDevices();
-    print(devices);
-  }
-
-  getAllDevices() {
-    for (int i = 2; i < 10; i++) {
-      print(i);
-      // operationWemo(devices[i], 'get_name');
-      // final name = operationWemo(devices[i], 'get_name');
-      // devices[i]['name'] = name;
-    }
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   for (var i = 2; i < 10; i++) {
+  //     var device = {};
+  //     device['ip'] = '192.168.1.10$i';
+  //     // String deviceName = await operationWemo(device['ip'], 'get_name');
+  //     device['name'] = operationWemo(device['ip'], 'get_name');
+  //     devices.add(device);
+  //   }
+  //   getAllDevices();
+  //   print(devices);
+  // }
 
   void _incrementCounter() {
     setState(() {
@@ -125,29 +75,79 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<List<Map>> _futurePosts = WeMoRequest().fetchItems();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
+      appBar: AppBar(
+        title: const Text('Posts'),
       ),
-      floatingActionButton: FloatingActionButton(
-        // onPressed: _incrementCounter,
-        onPressed: () => operationWemo('192.168.1.102', 'get_state'),
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     Navigator.of(context).push(MaterialPageRoute(builder: (context) => AddPost()));
+      //   },
+      //   child: Icon(Icons.add),
+      // ),
+      body: FutureBuilder<List<Map>>(
+        future: _futurePosts,
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          //Check for errors
+          if (snapshot.hasError) {
+            return Center(child: Text('Some error occurred ${snapshot.error}'));
+          }
+          //Has data arrived
+          if (snapshot.hasData) {
+            List<Map> posts = snapshot.data;
+
+            return ListView.builder(
+                itemCount: posts.length,
+                itemBuilder: (context, index) {
+                  Map thisItem = posts[index];
+                  return ListTile(
+                    title: Text('${thisItem['state']}'),
+                    // subtitle: Text('${thisItem['body']}'),
+                    // onTap: () {
+                    //   Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostDetails(thisItem['id'].toString())));
+                    // },
+                  );
+                });
+          }
+
+          //Display a loader
+          return Center(child: CircularProgressIndicator());
+        },
       ),
     );
   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         // title: Text(widget.title),
+//         title: const Text('WeMo'),
+//       ),
+//       body: Center(
+//         child: Column(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: <Widget>[
+//             const Text(
+//               'You have pushed the button this many times:',
+//             ),
+//             Text(
+//               '$_counter',
+//               style: Theme.of(context).textTheme.headlineMedium,
+//             ),
+//           ],
+//         ),
+//       ),
+//       floatingActionButton: FloatingActionButton(
+//         onPressed: _incrementCounter,
+//         // onPressed: () => operationWemo('192.168.1.102', 'get_state'),
+//         tooltip: 'Increment',
+//         child: const Icon(Icons.add),
+//       ),
+//     );
+//   }
 }
