@@ -75,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future<List<Map>> _futurePosts = WeMoRequest().fetchItems();
+  Future<List<Map>> _devices = WeMoRequest().fetchItems();
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
       //   child: Icon(Icons.add),
       // ),
       body: FutureBuilder<List<Map>>(
-        future: _futurePosts,
+        future: _devices,
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           //Check for errors
           if (snapshot.hasError) {
