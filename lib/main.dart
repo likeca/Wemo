@@ -32,122 +32,55 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  final Future<List<Map>> _devices = WeMoRequest().fetchItems();
 
-  // Future<List<Map>> _devices = OperateWeMo().fetchWeMos();
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   OperateWeMo().fetchWeMos();
-  //   // devices = OperateWeMo().fetchWeMos();
-  //   // print(devices);
-  // }
-
-  // getAllDevices() {
-  //   for (int i = 2; i < 10; i++) {
-  //     print(i);
-  //     // operationWemo(devices[i], 'get_name').then((name) {
-  //     //   devices[i]['name'] = name;
-  //     // });
-
-  //     // final name = await operationWemo(devices[i], 'get_name');
-  //     // devices[i]['name'] = name;
-  //   }
-  // }
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   for (var i = 2; i < 10; i++) {
-  //     var device = {};
-  //     device['ip'] = '192.168.1.10$i';
-  //     // String deviceName = await operationWemo(device['ip'], 'get_name');
-  //     device['name'] = operationWemo(device['ip'], 'get_name');
-  //     devices.add(device);
-  //   }
-  //   getAllDevices();
-  //   print(devices);
-  // }
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  void toggleWemo() {
+    print('Wemo');
   }
-
-  Future<List<Map>> _devices = WeMoRequest().fetchItems();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Posts'),
-      ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () {
-      //     Navigator.of(context).push(MaterialPageRoute(builder: (context) => AddPost()));
-      //   },
-      //   child: Icon(Icons.add),
-      // ),
       body: FutureBuilder<List<Map>>(
         future: _devices,
         builder: (BuildContext context, AsyncSnapshot snapshot) {
-          //Check for errors
           if (snapshot.hasError) {
             return Center(child: Text('Some error occurred ${snapshot.error}'));
+          } else if (snapshot.hasData) {
+            List<Map> devices = snapshot.data;
+            return Center(
+              child: Container(
+                margin: const EdgeInsets.all(20),
+                // padding: const EdgeInsets.all(20),
+                child: Wrap(
+                  alignment: WrapAlignment.spaceEvenly,
+                  spacing: 20,
+                  runSpacing: 30,
+                  children: <Widget>[
+                    for (int i = 0; i < devices.length; i++)
+                      ElevatedButton(
+                        onPressed: () {
+                          toggleWemo();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.all(25), // Set padding
+                          textStyle: const TextStyle(fontSize: 18),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10), // <-- Radius
+                          ),
+                          fixedSize: const Size(220, 60),
+                        ),
+                        child: Text('${devices[i]['state']}'),
+                      )
+                  ],
+                ),
+              ),
+            );
+          } else {
+            return const Center(child: CircularProgressIndicator());
           }
-          //Has data arrived
-          if (snapshot.hasData) {
-            List<Map> posts = snapshot.data;
-
-            return ListView.builder(
-                itemCount: posts.length,
-                itemBuilder: (context, index) {
-                  Map thisItem = posts[index];
-                  return ListTile(
-                    title: Text('${thisItem['state']}'),
-                    // subtitle: Text('${thisItem['body']}'),
-                    // onTap: () {
-                    //   Navigator.of(context).push(MaterialPageRoute(builder: (context) => PostDetails(thisItem['id'].toString())));
-                    // },
-                  );
-                });
-          }
-
-          //Display a loader
-          return Center(child: CircularProgressIndicator());
         },
       ),
     );
   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         // title: Text(widget.title),
-//         title: const Text('WeMo'),
-//       ),
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: <Widget>[
-//             const Text(
-//               'You have pushed the button this many times:',
-//             ),
-//             Text(
-//               '$_counter',
-//               style: Theme.of(context).textTheme.headlineMedium,
-//             ),
-//           ],
-//         ),
-//       ),
-//       floatingActionButton: FloatingActionButton(
-//         onPressed: _incrementCounter,
-//         // onPressed: () => operationWemo('192.168.1.102', 'get_state'),
-//         tooltip: 'Increment',
-//         child: const Icon(Icons.add),
-//       ),
-//     );
-//   }
 }

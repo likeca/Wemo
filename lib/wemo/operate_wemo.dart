@@ -26,7 +26,7 @@ class WeMoRequest {
     try {
       for (var i = 2; i < 10; i++) {
         String url = '192.168.1.10$i:49153';
-        http.Response response = await http.post(Uri.http(url, '/upnp/control/basicevent1'), headers: headers, body: body).timeout(const Duration(seconds: 1));
+        http.Response response = await http.post(Uri.http(url, '/upnp/control/basicevent1'), headers: headers, body: body).timeout(const Duration(seconds: 2));
         if (response.statusCode == 200) {
           var item = {};
           RegExp regexp = RegExp('<$option>(.*)</$option>');
