@@ -77,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                             fixedSize: const Size(220, 60),
                             backgroundColor: (devices[i]['switchState'] == '0' || devices[i]['switchState'] == '-1') ? Colors.blueGrey : Colors.blue),
-                        child: Text('${devices[i]['name']}'),
+                        child: Text('${devices[i]['name']}', style: const TextStyle(fontWeight: FontWeight.w600)),
                       )
                   ],
                 ),
