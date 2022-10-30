@@ -76,7 +76,11 @@ class _MyHomePageState extends State<MyHomePage> {
                               borderRadius: BorderRadius.circular(10), // <-- Radius
                             ),
                             fixedSize: const Size(220, 60),
-                            backgroundColor: (devices[i]['switchState'] == '0' || devices[i]['switchState'] == '-1') ? Colors.blueGrey : Colors.blue),
+                            backgroundColor: (devices[i]['switchState'] == '0')
+                                ? Colors.blueGrey
+                                : (devices[i]['switchState'] == '-1')
+                                    ? Colors.red[900]
+                                    : Colors.blue),
                         child: Text('${devices[i]['name']}', style: const TextStyle(fontWeight: FontWeight.w600)),
                       )
                   ],
