@@ -32,7 +32,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final Future<List<Map>> _devices = WeMoRequest().fetchItems();
+  final Future<List<Map>> _devices = WeMoRequest().fetchDevices();
 
   void toggleWemo() {
     print('Wemo');
@@ -48,6 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
             return Center(child: Text('Some error occurred ${snapshot.error}'));
           } else if (snapshot.hasData) {
             List<Map> devices = snapshot.data;
+            print(devices);
             return Center(
               child: Container(
                 margin: const EdgeInsets.all(20),
@@ -63,14 +64,14 @@ class _MyHomePageState extends State<MyHomePage> {
                           toggleWemo();
                         },
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.all(25), // Set padding
-                          textStyle: const TextStyle(fontSize: 18),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10), // <-- Radius
-                          ),
-                          fixedSize: const Size(220, 60),
-                        ),
-                        child: Text('${devices[i]['state']}'),
+                            padding: const EdgeInsets.all(25), // Set padding
+                            textStyle: const TextStyle(fontSize: 18),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10), // <-- Radius
+                            ),
+                            fixedSize: const Size(220, 60),
+                            backgroundColor: (devices[i]['switchState'] == '0') ? Colors.blueGrey : Colors.blue),
+                        child: Text('${devices[i]['name']}'),
                       )
                   ],
                 ),
