@@ -4,15 +4,17 @@ import 'package:http/http.dart' as http;
 
 class WeMoRequest {
   Future<Map> operateWeMo(String ip, String cmd) async {
-    Map item = {'name': '', 'switchState': 0};
-    int switchState = 0;
+    Map item = {'name': 'Disconnected', 'switchState': '-1'};
+    String switchState = '0';
     String operation = 'Get';
     String option = 'BinaryState';
 
     if (cmd == 'on') {
       operation = 'Set'; // Get or Set, GetBinaryState, SetBinaryState, GetSignalStrength,
+      switchState = '1';
     } else if (cmd == 'off') {
       operation = 'Set'; // Get or Set, GetBinaryState, SetBinaryState, GetSignalStrength,
+      switchState = '0';
     } else if (cmd == 'get_state') {
       operation = 'Get'; // Get or Set, GetBinaryState, SetBinaryState, GetSignalStrength,
     } else if (cmd == 'get_name') {
@@ -34,7 +36,7 @@ class WeMoRequest {
     ''';
     try {
       String url = '$ip:49153';
-      http.Response response = await http.post(Uri.http(url, '/upnp/control/basicevent1'), headers: headers, body: body).timeout(const Duration(seconds: 2));
+      http.Response response = await http.post(Uri.http(url, '/upnp/control/basicevent1'), headers: headers, body: body).timeout(const Duration(seconds: 1));
       if (response.statusCode == 200) {
         if (cmd == 'get_name') {
           RegExp regexp = RegExp('<$option>(.*)</$option>');
@@ -57,9 +59,10 @@ class WeMoRequest {
   Future<List<Map>> fetchDevices() async {
     List<Map> items = [];
 
-    for (var i = 2; i < 10; i++) {
-      String ip = '192.168.1.10$i';
+    for (var i = 0; i < 10; i++) {
       var item = {};
+      String ip = '192.168.1.10$i';
+      item['ip'] = ip;
       Map result = await operateWeMo(ip, 'get_name');
       item['name'] = result['name'];
       result = await operateWeMo(ip, 'get_state');

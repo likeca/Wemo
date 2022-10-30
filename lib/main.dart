@@ -34,8 +34,15 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final Future<List<Map>> _devices = WeMoRequest().fetchDevices();
 
-  void toggleWemo() {
-    print('Wemo');
+  void toggleWemo(String ip, String switchState) {
+    if (switchState != '-1') {
+      if (switchState == '0') {
+        WeMoRequest().operateWeMo(ip, 'on');
+      } else {
+        WeMoRequest().operateWeMo(ip, 'off');
+      }
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => super.widget));
+    }
   }
 
   @override
@@ -48,7 +55,6 @@ class _MyHomePageState extends State<MyHomePage> {
             return Center(child: Text('Some error occurred ${snapshot.error}'));
           } else if (snapshot.hasData) {
             List<Map> devices = snapshot.data;
-            print(devices);
             return Center(
               child: Container(
                 margin: const EdgeInsets.all(20),
@@ -61,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     for (int i = 0; i < devices.length; i++)
                       ElevatedButton(
                         onPressed: () {
-                          toggleWemo();
+                          toggleWemo(devices[i]['ip'], devices[i]['switchState']);
                         },
                         style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.all(25), // Set padding
@@ -70,7 +76,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               borderRadius: BorderRadius.circular(10), // <-- Radius
                             ),
                             fixedSize: const Size(220, 60),
-                            backgroundColor: (devices[i]['switchState'] == '0') ? Colors.blueGrey : Colors.blue),
+                            backgroundColor: (devices[i]['switchState'] == '0' || devices[i]['switchState'] == '-1') ? Colors.blueGrey : Colors.blue),
                         child: Text('${devices[i]['name']}'),
                       )
                   ],
